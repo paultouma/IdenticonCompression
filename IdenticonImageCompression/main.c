@@ -9,6 +9,9 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+char *getcwd(char *buf, size_t size);
 
 const int identicon_pixel_length = 3;
 const int unicode_zero = 48;
@@ -26,7 +29,7 @@ int decimal_to_binary(int dec)
 }
 
 //fill with ending zeros
-void post_fill_binary_identicon_string (char binary_identicon_string_rep [identicon_pixel_length * identicon_pixel_length + 1]) {
+void post_fill_binary_identicon_string (char binary_identicon_string_rep []) {
     
     size_t length = strlen(binary_identicon_string_rep);
     
@@ -60,13 +63,13 @@ void generate_identicon(int identicon [identicon_pixel_length] [identicon_pixel_
     }
 }
 
-void print_identicon(int arr[identicon_pixel_length][identicon_pixel_length])
+void print_identicon(int identicon[identicon_pixel_length][identicon_pixel_length])
 {
     for (int r = 0; r < identicon_pixel_length; r++)
     {
         for (int c = 0; c < identicon_pixel_length; c++)
         {
-            printf("%d", arr[r][c]);
+            printf("%d", identicon[r][c]);
         }
         printf("\n");
     }
@@ -86,5 +89,42 @@ int main(int argc, const char * argv[]) {
         
     }
     
+//
+//    FILE *file;
+//    unsigned char *buffer;
+//    unsigned long fileLen;
+//    
+//    //Open file
+//    file = fopen("/Users/paul2/Desktop/batman.jpg", "rb");
+//    if (!file)
+//    {
+//        fprintf(stderr, "Unable to open file %s", "/Users/paul2/Desktop/batman.jpg");
+//        return 1;
+//    }
+//    
+//    //Get file length
+//    fseek(file, 0, SEEK_END);
+//    fileLen=ftell(file);
+//    fseek(file, 0, SEEK_SET);
+//    
+//    //Allocate memory
+//    buffer=(char *)malloc(fileLen);
+//    if (!buffer)
+//    {
+//        fprintf(stderr, "Memory error!");
+//        fclose(file);
+//        return 1;
+//    }
+//    
+//    fread(buffer,fileLen,sizeof(unsigned char),file);
+//    fclose(file);
+//    
+//    int i=0;
+//    
+//    while (i < fileLen){
+//        printf("%02X ",((unsigned char)buffer[i]));
+//               i++;
+//               if( ! (i % 16) ) printf( "\n" );
+//               }
     return 0;
 }

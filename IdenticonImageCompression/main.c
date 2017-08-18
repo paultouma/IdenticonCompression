@@ -6,6 +6,7 @@
 //  Copyright © 2017 Paul Touma. All rights reserved.
 //
 
+#include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -85,8 +86,6 @@ void generate_identicon(int identicon [identicon_pixel_length] [identicon_pixel_
     //convert to binary
     int binary_identicon_id = decimal_to_binary (dec_identicon_id);
     
-    printf("%d: %d\n", dec_identicon_id, binary_identicon_id);
-    
     //initialize binary string and fill ending zeros if neeeded
     char binary_identicon_string_rep[identicon_pixel_length * identicon_pixel_length + 1];
     sprintf(binary_identicon_string_rep, "%d", binary_identicon_id);
@@ -131,15 +130,53 @@ void print_identicon(int identicon[identicon_pixel_length][identicon_pixel_lengt
 
 int main(int argc, const char * argv[]) {
    
-    int possible_identicons = pow(2,identicon_pixel_length * identicon_pixel_length);
-    
-    for(int current_dec_id = 0; current_dec_id < possible_identicons; current_dec_id++) {
-        
-        int current_identicon [identicon_pixel_length] [identicon_pixel_length];
-        generate_identicon(current_identicon, current_dec_id);
-        print_identicon(current_identicon);
-                
+//    int possible_identicons = pow(2,identicon_pixel_length * identicon_pixel_length);
+//    
+//    for(int current_dec_id = 0; current_dec_id < possible_identicons; current_dec_id++) {
+//        
+//        int current_identicon [identicon_pixel_length] [identicon_pixel_length];
+//        generate_identicon(current_identicon, current_dec_id);
+//        print_identicon(current_identicon);
+//                
+//    }
+
+    //file creation
+    FILE *file;
+    char *buffer;
+    size_t fileLen;
+    char *filename = "/Users/paul2/Desktop/pattern.tiff";
+
+    //open file
+    file = fopen(filename, "rb");
+    if (!file)
+    {
+        fprintf(stderr, "Unable to open file %s", filename);
+        return 1;
     }
 
-    
+    //get file length
+    fseek(file, 0, SEEK_END);
+    fileLen=ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    //allocate memory
+    buffer=(char *)malloc(fileLen);
+    if (!buffer)
+    {
+        fprintf(stderr, "memory error!");
+        fclose(file);
+        return 1;
     }
+    
+    //read the file into buffer
+    fread(buffer,fileLen,sizeof(unsigned char),file);
+    fclose(file);
+
+    int i=0;
+
+    while (i < fileLen){
+        printf("%02X ",((unsigned char)buffer[i]));
+        i++;
+        if( ! (i % 8) ) printf( "\n" );
+    }
+}

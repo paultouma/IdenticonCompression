@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 //constants
-const int identicon_pixel_length = 2;
+const int identicon_pixel_length = 3;
 const int unicode_zero = 48;
 
 /*
@@ -57,9 +57,13 @@ void post_fill_binary_identicon_string (char binary_identicon_string_rep []) {
     
     int current_bin_position = 0;
     
-    char adjuted_binary_string_rep [identicon_pixel_length * identicon_pixel_length];
+    char adjuted_binary_string_rep [identicon_pixel_length * identicon_pixel_length + 1];
     
-    for (int current_position = 0; current_position < identicon_pixel_length * identicon_pixel_length; current_position++) {
+    for (int current_position = 0; current_position < identicon_pixel_length * identicon_pixel_length + 1; current_position++) {
+        
+        if (current_position == identicon_pixel_length * identicon_pixel_length) {
+            adjuted_binary_string_rep[current_position] = '\0'; //end of the char array marker
+        }
         if (current_position < identicon_pixel_length * identicon_pixel_length - original_bin_len) {
             adjuted_binary_string_rep[current_position] = '0';
         } else {
@@ -85,6 +89,7 @@ void generate_identicon(int identicon [identicon_pixel_length] [identicon_pixel_
     
     //convert to binary
     int binary_identicon_id = decimal_to_binary (dec_identicon_id);
+
     
     //initialize binary string and fill ending zeros if neeeded
     char binary_identicon_string_rep[identicon_pixel_length * identicon_pixel_length + 1];
@@ -130,15 +135,15 @@ void print_identicon(int identicon[identicon_pixel_length][identicon_pixel_lengt
 
 int main(int argc, const char * argv[]) {
    
-//    int possible_identicons = pow(2,identicon_pixel_length * identicon_pixel_length);
-//    
-//    for(int current_dec_id = 0; current_dec_id < possible_identicons; current_dec_id++) {
-//        
-//        int current_identicon [identicon_pixel_length] [identicon_pixel_length];
-//        generate_identicon(current_identicon, current_dec_id);
-//        print_identicon(current_identicon);
-//                
-//    }
+    int possible_identicons = pow(2,identicon_pixel_length * identicon_pixel_length);
+    
+    for(int current_dec_id = 0; current_dec_id < possible_identicons; current_dec_id++) {
+        
+        int current_identicon [identicon_pixel_length] [identicon_pixel_length];
+        generate_identicon(current_identicon, current_dec_id);
+        //print_identicon(current_identicon);
+                
+    }
 
     //file creation
     FILE *file;
@@ -172,11 +177,42 @@ int main(int argc, const char * argv[]) {
     fread(buffer,fileLen,sizeof(unsigned char),file);
     fclose(file);
 
-    int i=0;
-
-    while (i < fileLen){
-        printf("%02X ",((unsigned char)buffer[i]));
-        i++;
-        if( ! (i % 8) ) printf( "\n" );
+    int current_pos = 8;
+    
+    int pixel_width = 518;
+    int pixel_height = 604;
+    
+    int identicon_count = 0;
+    
+    while (current_pos < fileLen && current_pos < pixel_height * pixel_width) {
+        
+        int potential_identicon [identicon_pixel_length] [identicon_pixel_length];
+        
+        
+        //only do so for the top left of every identicon
+        if (current_pos % identicon_pixel_length == 0 && (current_pos / pixel_width) % identicon_pixel_length == 0) {
+            
+            //fill up the potential identicon
+            for (int row = 0; row < identicon_pixel_length; row++) {
+                
+                for (int col = 0; col < identicon_pixel_length; col++) {
+                    
+                    int current_position = current_pos + (row) + (col * pixel_width); //adding the row and column components independently
+                    
+                    unsigned char c = (unsigned char) buffer[current_position];
+                    
+                    int i = (int) c; //converting char to integer
+                    
+                    potential_identicon[row][col] = i == 255 ? 1 : 0;
+                }
+            }
+            
+            identicon_count++;
+        }
+        
+        current_pos = current_pos + 1;
     }
+    
+    //print out the results of the compression
+    printf("Using an identicon pixel length of %d, %d bytes of tiff image read compressed into %d bytes. \n", identicon_pixel_length, current_pos, identicon_count);
 }
